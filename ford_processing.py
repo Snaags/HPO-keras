@@ -99,8 +99,6 @@ This will allow us to construct a model that is easily applicable to multivariat
 series.
 """
 
-x_train = x_train.reshape((x_train.shape[0], x_train.shape[1], 1))
-x_test = x_test.reshape((x_test.shape[0], x_test.shape[1], 1))
 
 """
 Finally, in order to use `sparse_categorical_crossentropy`, we will have to count
@@ -113,9 +111,6 @@ num_classes = len(np.unique(y_train))
 Now we shuffle the training set because we will be using the `validation_split` option
 later when training.
 """
-idx = np.random.permutation(len(x_train))
-x_train = x_train[idx]
-y_train = y_train[idx]
 
 """
 Standardize the labels to positive integers.

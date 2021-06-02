@@ -1,6 +1,8 @@
 import numpy as np 
 from tensorflow import keras
 import matplotlib.pyplot as plt
+from keras_model import make_model
+from sklearn.utils import shuffle
 
 """
 ## Build a model
@@ -25,46 +27,31 @@ def load_dataset():
 
  
 
-def make_model(input_shape):
-    input_layer = keras.layers.Input(input_shape)
 
-    conv1 = keras.layers.Conv1D(filters=64, kernel_size=3, padding="same")(input_layer)
-    conv1 = keras.layers.BatchNormalization()(conv1)
-    conv1 = keras.layers.ReLU()(conv1)
-
-    conv2 = keras.layers.Conv1D(filters=64, kernel_size=3, padding="same")(conv1)
-    conv2 = keras.layers.BatchNormalization()(conv2)
-    conv2 = keras.layers.ReLU()(conv2)
-
-    conv3 = keras.layers.Conv1D(filters=64, kernel_size=3, padding="same")(conv2)
-    conv3 = keras.layers.BatchNormalization()(conv3)
-    conv3 = keras.layers.ReLU()(conv3)
-
-    gap = keras.layers.GlobalAveragePooling1D()(conv3)
-
-    output_layer = keras.layers.Dense(2, activation="softmax")(gap)
-
-    return keras.models.Model(inputs=input_layer, outputs=output_layer)
-
-
-def main(hyperparameter):
+def main(hyperparameter,budget= 150):
     
-        
+    batch_size = 4 
 
 
     x_train,y_train,x_test,y_test = load_dataset()
     print(x_train.shape)
-    exit()
-    model = make_model(input_shape=x_train.shape[1:])
-    keras.utils.plot_model(model, show_shapes=True)
-    
+    train=keras.preprocessing.timeseries_dataset_from_array(x_train[:int(len(y_train)*0.8),:],y_train[:int(len(y_train)*0.8)],sequence_length =hyperparameter["window"],batch_size = batch_size )
+    val = keras.preprocessing.timeseries_dataset_from_array(x_train[int(len(y_train)*0.8):,:],y_train[int(len(y_train)*0.8):],hyperparameter["window"],batch_size = batch_size)
+    test = keras.preprocessing.timeseries_dataset_from_array(x_test,y_test,hyperparameter["window"],batch_size = batch_size)
+
+    for i in train:
+        print(i[0].shape)
+        print(len(train))
     """
     ## Train the model
     
     """
+    print("budget: ",budget)
     num_classes = 2
-    epochs = 500
-    batch_size = 32
+    epochs = 150
+    model = make_model(input_shape=(hyperparameter["window"],x_train.shape[1]),output_size = num_classes,hyperparameters=hyperparameter)
+    
+    keras.utils.plot_model(model, show_shapes=True)
     
     callbacks = [
         keras.callbacks.ModelCheckpoint(
@@ -78,45 +65,37 @@ def main(hyperparameter):
     model.compile(
         optimizer="adam",
         loss="sparse_categorical_crossentropy",
-        metrics=["sparse_categorical_accuracy"],
+        metrics=["sparse_categorical_accuracy"]
+        
     )
     history = model.fit(
-        x_train,
-        y_train,
-        shuffle = True,
-        batch_size=batch_size,
+        train,
         epochs=epochs,
-        callbacks=callbacks,
-        validation_split=0.2,
         verbose=1,
+        shuffle = True,
+        callbacks = callbacks,validation_data=val
     )
     
     """
     ## Evaluate model on test data
     """
     
-    model = keras.models.load_model("best_model.h5")
     
-    test_loss, test_acc = model.evaluate(x_test, y_test)
+    model = keras.models.load_model("best_model.h5")
+    test_loss, test_acc = model.evaluate(train)
+    full_loss, full_acc = model.evaluate(test)
     
     print("Test accuracy", test_acc)
     print("Test loss", test_loss)
+    print("full accuracy", full_acc)
+    print("full loss", full_loss)
     
     """
     ## Plot the model's training and validation loss
     """
     
-    metric = "sparse_categorical_accuracy"
-    plt.figure()
-    plt.plot(history.history[metric])
-    plt.plot(history.history["val_" + metric])
-    plt.title("model " + metric)
-    plt.ylabel(metric, fontsize="large")
-    plt.xlabel("epoch", fontsize="large")
-    plt.legend(["train", "val"], loc="best")
-    plt.show()
-    plt.close()
     
+    return test_loss, test_acc
     """
     We can see how the training accuracy reaches almost 0.95 after 100 epochs.
     However, by observing the validation accuracy we can see how the network still needs
@@ -126,4 +105,11 @@ def main(hyperparameter):
     the model starts overfitting.
     """
 if __name__ == "__main__":
-    main("hi")
+    hyperparameter = {"batch_size": 32, "epochs": 50, 
+    "layer_1_BatchNormalization": 1, "layer_1_filters": 100, "layer_1_kernel_size": 2, "layer_1_padding": "same", "layer_1_type": "Conv1D", 
+    "layer_2_BatchNormalization": 1, "layer_2_filters": 80, "layer_2_kernel_size": 2, "layer_2_padding": "same", "layer_2_type": "Conv1D", 
+    "layer_3_BatchNormalization": 1, "layer_3_filters": 20, "layer_3_kernel_size": 6, "layer_3_padding": "same", "layer_3_type": "Conv1D", 
+    "layer_4_type": "Dense", "layer_4_units": 20, "num_layers": 4,
+    "window":1, "optimiser": "Adam", "optimiser_lr": 1.2028420169154692e-05}
+
+    main(hyperparameter)

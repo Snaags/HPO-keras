@@ -1,7 +1,7 @@
 import numpy as np 
 from tensorflow import keras
 import matplotlib.pyplot as plt
-
+from sklearn.utils import shuffle
 """
 ## Build a model
 
@@ -22,50 +22,71 @@ def load_dataset():
     y_test = np.load(path+"y_test.npy")        
     return x_train, y_train,x_test,y_test
 
+def build_layer(layer_number : int , previous_layer, hyperparameter_conf):
 
- 
+    layer_type = hyperparameter_conf["layer_"+str(layer_number)+"_type"] 
+    hyperparameters = hyperparameter_conf
+    hyperparameters.pop("layer_"+str(layer_number)+"_type")
+    layer_args = dict() 
+    for parameter_name in hyperparameters:
+        if "layer_"+str(layer_number) in parameter_name:
+            layer_args[parameter_name.replace("layer_"+str(layer_number)+"_",'')] = hyperparameters[parameter_name]
+    print(layer_args) 
+    function = eval("keras.layers."+layer_type)
+    print(previous_layer )
+    if layer_type == "Dense":
+            
+        gap = keras.layers.GlobalAveragePooling1D()(previous_layer)
+        layer = function(**layer_args,activation = "ReLU")(gap)
+   
+    if layer_type == "Conv1D": 
+        if layer_args["BatchNormalization"] == 1:
+            layer_args.pop("BatchNormalization")
+            layer = function(**layer_args)(previous_layer)
+            layer = keras.layers.BatchNormalization()(layer)
+            layer = keras.layers.ReLU()(layer)
+        else:
+            layer_args.pop("BatchNormalization")
+            layer = function(**layer_args)(previous_layer)
+            layer = keras.layers.ReLU()(layer)
+    ##TODO 
+        #Add conditional features of different layer types batch pooling etc 
+    return layer
+    
 
-def make_model(input_shape, output_size):
+def make_model(input_shape, output_size,hyperparameters):
     input_layer = keras.layers.Input(input_shape)
-
-    conv1 = keras.layers.Conv1D(filters=64, kernel_size=3, padding="same")(input_layer)
-    conv1 = keras.layers.BatchNormalization()(conv1)
-    conv1 = keras.layers.ReLU()(conv1)
-
-    conv2 = keras.layers.Conv1D(filters=64, kernel_size=3, padding="same")(conv1)
-    conv2 = keras.layers.BatchNormalization()(conv2)
-    conv2 = keras.layers.ReLU()(conv2)
-
-    conv3 = keras.layers.Conv1D(filters=64, kernel_size=3, padding="same")(conv2)
-    conv3 = keras.layers.BatchNormalization()(conv3)
-    conv3 = keras.layers.ReLU()(conv3)
-
-    gap = keras.layers.GlobalAveragePooling1D()(conv3)
-
-    output_layer = keras.layers.Dense(output_size, activation="softmax")(gap)
-
-    return keras.models.Model(inputs=input_layer, outputs=output_layer)
+    layers = [input_layer]
+    ##Layer 1                
+    for layer in range(1,hyperparameters["num_layers"]+1):
+        print(layer)
+        layers.append(build_layer(layer,layers[-1],hyperparameters) )
+    layers.append(keras.layers.Dense(output_size,activation = "softmax")(layers[-1]))
+    return keras.models.Model(inputs=input_layer, outputs=layers[-1])
 
 
-def main(hyperparameter):
+def main(hyperparameter,budget):
     
         
 
-
+    train_samples = int(budget)
+    test_samples = 100000
     num_classes = 21
     x_train,y_train,x_test,y_test = load_dataset()
     classes = np.unique(y_train)
+    x_train,y_train = shuffle(x_train,y_train,n_samples = train_samples)
+    x_test,y_test = shuffle(x_test,y_test,n_samples = test_samples)
     print(x_train.shape)
-    model = make_model(input_shape=x_train.shape[1:],output_size = num_classes)
+    model = make_model(input_shape=x_train.shape[1:],output_size = num_classes,hyperparameters = hyperparameter)
     keras.utils.plot_model(model, show_shapes=True)
-    
+        
     """
     ## Train the model
     
     """
     num_classes = 21
-    epochs = 100
-    batch_size = 64 
+    epochs = 1 
+    batch_size = 256 
     
     callbacks = [
         keras.callbacks.ModelCheckpoint(
@@ -76,6 +97,7 @@ def main(hyperparameter):
         ),
         keras.callbacks.EarlyStopping(monitor="val_loss", patience=50, verbose=1),
     ]
+    opt = keras.optimizers.Adam(learning_rate = hyperparameter["optimiser_lr"])
     model.compile(
         optimizer="adam",
         loss="sparse_categorical_crossentropy",
@@ -88,7 +110,7 @@ def main(hyperparameter):
         batch_size=batch_size,
         epochs=epochs,
         callbacks=callbacks,
-        validation_split=0.2,
+        validation_split=0.1,
         verbose=1,
     )
     
@@ -107,17 +129,8 @@ def main(hyperparameter):
     ## Plot the model's training and validation loss
     """
     
-    metric = "sparse_categorical_accuracy"
-    plt.figure()
-    plt.plot(history.history[metric])
-    plt.plot(history.history["val_" + metric])
-    plt.title("model " + metric)
-    plt.ylabel(metric, fontsize="large")
-    plt.xlabel("epoch", fontsize="large")
-    plt.legend(["train", "val"], loc="best")
-    plt.show()
-    plt.close()
-    
+
+    return test_loss, test_acc 
     """
     We can see how the training accuracy reaches almost 0.95 after 100 epochs.
     However, by observing the validation accuracy we can see how the network still needs
@@ -127,4 +140,10 @@ def main(hyperparameter):
     the model starts overfitting.
     """
 if __name__ == "__main__":
-    main("hi")
+    hyperparameter = {"batch_size": 32, "epochs": 50, 
+    "layer_1_BatchNormalization": 0, "layer_1_filters": 109, "layer_1_kernel_size": 2, "layer_1_padding": "same", "layer_1_type": "Conv1D", 
+    "layer_2_BatchNormalization": 1, "layer_2_filters": 93, "layer_2_kernel_size": 2, "layer_2_padding": "same", "layer_2_type": "Conv1D", 
+    "layer_3_BatchNormalization": 1, "layer_3_filters": 21, "layer_3_kernel_size": 6, "layer_3_padding": "same", "layer_3_type": "Conv1D", 
+    "layer_4_type": "Dense", "layer_4_units": 35, "num_layers": 4,
+     "optimiser": "Adam", "optimiser_lr": 1.2028420169154692e-05}
+    main(hyperparameter )

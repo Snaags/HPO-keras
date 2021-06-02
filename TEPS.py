@@ -44,7 +44,24 @@ def import_data(path):
 # %%
 train = import_data("/datasets/TEPS/TEP_Faulty_Training.RData")
 # %%
-train.hist()
+train.head()
+
 # %%
-x = data.keys()
+train["faultNumber"].hist(bins = 40)
+# %%
+train.shape
+# %%
+train
+# %%
+train[train["faultNumber"] == 1].shape
+# %%
+arr= np.load("datasets/TEPS/Testing_5.npy")
+# %%
+arr.shape
+# %%
+arr
+# %%
+arr[:,:5]
+# %%
+arr[-1,:5]
 # %%
