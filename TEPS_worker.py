@@ -42,7 +42,7 @@ def build_layer(layer_number : int , previous_layer, hyperparameter_conf):
     if layer_type == "Conv1D": 
         if layer_args["BatchNormalization"] == 1:
             layer_args.pop("BatchNormalization")
-            layer = function(**layer_args)(previous_layer)
+            layer = function(**layer_args,data_format = "channels_first")(previous_layer)
             layer = keras.layers.BatchNormalization()(layer)
             layer = keras.layers.ReLU()(layer)
         else:
@@ -74,7 +74,9 @@ def main(hyperparameter,budget):
     num_classes = 21
     x_train,y_train,x_test,y_test = load_dataset()
     classes = np.unique(y_train)
-    x_train,y_train = shuffle(x_train,y_train,n_samples = train_samples)
+    print(x_train.shape)
+    
+    x_train,y_train = shuffle(x_train,y_train)
     x_test,y_test = shuffle(x_test,y_test,n_samples = test_samples)
     print(x_train.shape)
     model = make_model(input_shape=x_train.shape[1:],output_size = num_classes,hyperparameters = hyperparameter)
@@ -85,7 +87,7 @@ def main(hyperparameter,budget):
     
     """
     num_classes = 21
-    epochs = 1 
+    epochs = 3 
     batch_size = 256 
     
     callbacks = [
@@ -146,4 +148,4 @@ if __name__ == "__main__":
     "layer_3_BatchNormalization": 1, "layer_3_filters": 21, "layer_3_kernel_size": 6, "layer_3_padding": "same", "layer_3_type": "Conv1D", 
     "layer_4_type": "Dense", "layer_4_units": 35, "num_layers": 4,
      "optimiser": "Adam", "optimiser_lr": 1.2028420169154692e-05}
-    main(hyperparameter )
+    main(hyperparameter,20 )

@@ -19,7 +19,7 @@ def build_layer(layer_number : int , previous_layer, hyperparameter_conf):
     if layer_type == "Conv1D": 
         if layer_args["BatchNormalization"] == 1:
             layer_args.pop("BatchNormalization")
-            layer = function(**layer_args,data_format = "channels_first")(previous_layer)
+            layer = function(**layer_args)(previous_layer)
             layer = keras.layers.BatchNormalization()(layer)
             layer = keras.layers.ReLU()(layer)
         else:

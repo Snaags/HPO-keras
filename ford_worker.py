@@ -30,26 +30,27 @@ def load_dataset():
 
 def main(hyperparameter,budget= 150):
     
-    batch_size = 4 
+    batch_size = 32 
 
 
     x_train,y_train,x_test,y_test = load_dataset()
+    """
     print(x_train.shape)
     train=keras.preprocessing.timeseries_dataset_from_array(x_train[:int(len(y_train)*0.8),:],y_train[:int(len(y_train)*0.8)],sequence_length =hyperparameter["window"],batch_size = batch_size )
     val = keras.preprocessing.timeseries_dataset_from_array(x_train[int(len(y_train)*0.8):,:],y_train[int(len(y_train)*0.8):],hyperparameter["window"],batch_size = batch_size)
     test = keras.preprocessing.timeseries_dataset_from_array(x_test,y_test,hyperparameter["window"],batch_size = batch_size)
-
-    for i in train:
-        print(i[0].shape)
-        print(len(train))
+    """
+    print(type(x_train))
+    x_train = np.reshape(x_train,(x_train.shape[0],x_train.shape[1],1))
+    x_test = np.reshape(x_test,(x_test.shape[0],x_test.shape[1],1))
     """
     ## Train the model
     
     """
     print("budget: ",budget)
     num_classes = 2
-    epochs = 150
-    model = make_model(input_shape=(hyperparameter["window"],x_train.shape[1]),output_size = num_classes,hyperparameters=hyperparameter)
+    epochs = 50
+    model = make_model(input_shape=(x_train.shape[1:]),output_size = num_classes,hyperparameters=hyperparameter)
     
     keras.utils.plot_model(model, show_shapes=True)
     
@@ -69,11 +70,13 @@ def main(hyperparameter,budget= 150):
         
     )
     history = model.fit(
-        train,
+        x_train,
+        y_train,
+        batch_size = batch_size,
         epochs=epochs,
         verbose=1,
         shuffle = True,
-        callbacks = callbacks,validation_data=val
+        callbacks = callbacks,validation_split = 0.2
     )
     
     """
@@ -82,8 +85,8 @@ def main(hyperparameter,budget= 150):
     
     
     model = keras.models.load_model("best_model.h5")
-    test_loss, test_acc = model.evaluate(train)
-    full_loss, full_acc = model.evaluate(test)
+    #test_loss, test_acc = model.evaluate(train)
+    full_loss, full_acc = model.evaluate(x_test,y_test)
     
     print("Test accuracy", test_acc)
     print("Test loss", test_loss)
