@@ -30,13 +30,13 @@ def init_config():
 
 
 
-    window = CSH.UniformIntegerHyperparameter(name = "window", lower = 1 ,upper = 16)
+    window_size = CSH.UniformIntegerHyperparameter(name = "window_size", lower = 1 ,upper = 16)
     ###Topology Definition]###
     conv_1_type = CSH.Constant(name = "conv_1_type", value = "Conv1D")
     conv_1_padding = CSH.Constant(name = "conv_1_padding",value = "same")
     conv_1_filters = CSH.UniformIntegerHyperparameter(name = "conv_1_filters", lower = 16 ,upper = 128)
     conv_1_BatchNormalization = CSH.UniformIntegerHyperparameter(name = "conv_1_BatchNormalization", lower = 0,upper = 1)
-    conv_1_kernel_size = CSH.UniformIntegerHyperparameter(name = "conv_1_kernel_size", lower =1 ,upper =6)
+    conv_1_kernel_size = CSH.UniformIntegerHyperparameter(name = "conv_1_kernel_size", lower =1 ,upper =16)
 
 
 
@@ -45,25 +45,25 @@ def init_config():
     conv_2_padding = CSH.Constant(name = "conv_2_padding",value = "same")
     conv_2_filters = CSH.UniformIntegerHyperparameter(name = "conv_2_filters", lower = 16 ,upper = 128)
     conv_2_BatchNormalization = CSH.UniformIntegerHyperparameter(name = "conv_2_BatchNormalization", lower = 0,upper = 1)
-    conv_2_kernel_size = CSH.UniformIntegerHyperparameter(name = "conv_2_kernel_size", lower =1 ,upper =6)
+    conv_2_kernel_size = CSH.UniformIntegerHyperparameter(name = "conv_2_kernel_size", lower =1 ,upper =16)
 
     conv_3_type = CSH.Constant(name = "conv_3_type", value = "Conv1D")
     conv_3_padding = CSH.Constant(name = "conv_3_padding",value = "same")
     conv_3_filters = CSH.UniformIntegerHyperparameter(name = "conv_3_filters", lower = 16 ,upper = 128)
     conv_3_BatchNormalization = CSH.UniformIntegerHyperparameter(name = "conv_3_BatchNormalization", lower = 0,upper = 1)
-    conv_3_kernel_size = CSH.UniformIntegerHyperparameter(name = "conv_3_kernel_size", lower =1 ,upper =6)
+    conv_3_kernel_size = CSH.UniformIntegerHyperparameter(name = "conv_3_kernel_size", lower =1 ,upper =16)
 
     conv_4_type = CSH.Constant(name = "conv_4_type", value = "Conv1D")
     conv_4_padding = CSH.Constant(name = "conv_4_padding",value = "same")
     conv_4_filters = CSH.UniformIntegerHyperparameter(name = "conv_4_filters", lower = 16 ,upper = 128)
     conv_4_BatchNormalization = CSH.UniformIntegerHyperparameter(name = "conv_4_BatchNormalization", lower = 0,upper = 1)
-    conv_4_kernel_size = CSH.UniformIntegerHyperparameter(name = "conv_4_kernel_size", lower =1 ,upper =6)
+    conv_4_kernel_size = CSH.UniformIntegerHyperparameter(name = "conv_4_kernel_size", lower =1 ,upper =16)
 
     conv_5_type = CSH.Constant(name = "conv_5_type", value = "Conv1D")
     conv_5_padding = CSH.Constant(name = "conv_5_padding",value = "same")
     conv_5_filters = CSH.UniformIntegerHyperparameter(name = "conv_5_filters", lower = 16 ,upper = 128)
     conv_5_BatchNormalization = CSH.UniformIntegerHyperparameter(name = "conv_5_BatchNormalization", lower = 0,upper = 1)
-    conv_5_kernel_size = CSH.UniformIntegerHyperparameter(name = "conv_5_kernel_size", lower =1 ,upper =6)
+    conv_5_kernel_size = CSH.UniformIntegerHyperparameter(name = "conv_5_kernel_size", lower =1 ,upper =16)
     
     dense_1_type = CSH.Constant(name = "dense_4_type", value = "Dense")
     dense_1_units = CSH.UniformIntegerHyperparameter(name = "dense_4_units", lower = 16, upper = 228)
@@ -82,38 +82,38 @@ def init_config():
     ####List of Hyperparameters
 
     hp_list = [
-        layer_1_type,
-        layer_1_padding,
-        layer_1_filters,
-        layer_1_BatchNormalization,
-        layer_1_kernel_size,
-        layer_2_type,
-        layer_2_padding,
-        layer_2_filters,
-        layer_2_BatchNormalization,
-        layer_2_kernel_size,
-        layer_3_type,
-        layer_3_padding,
-        layer_3_filters,
-        layer_3_BatchNormalization,
-        layer_3_kernel_size,
-        layer_4_type,
-        layer_4_padding,
-        layer_4_filters,
-        layer_4_BatchNormalization,
-        layer_4_kernel_size,
-        layer_5_type,
-        layer_5_padding,
-        layer_5_filters,
-        layer_5_BatchNormalization,
-        layer_5_kernel_size,
-        window,
-        layer_1_type,
-        layer_1_units,
-        layer_2_type,
-        layer_2_units,
-        layer_3_type,
-        layer_3_units,
+        conv_1_type,
+        conv_1_padding,
+        conv_1_filters,
+        conv_1_BatchNormalization,
+        conv_1_kernel_size,
+        conv_2_type,
+        conv_2_padding,
+        conv_2_filters,
+        conv_2_BatchNormalization,
+        conv_2_kernel_size,
+        conv_3_type,
+        conv_3_padding,
+        conv_3_filters,
+        conv_3_BatchNormalization,
+        conv_3_kernel_size,
+        conv_4_type,
+        conv_4_padding,
+        conv_4_filters,
+        conv_4_BatchNormalization,
+        conv_4_kernel_size,
+        conv_5_type,
+        conv_5_padding,
+        conv_5_filters,
+        conv_5_BatchNormalization,
+        conv_5_kernel_size,
+        window_size,
+        dense_1_type,
+        dense_1_units,
+        dense_2_type,
+        dense_2_units,
+        dense_3_type,
+        dense_3_units,
         epochs,
         batch_size,
         optimiser,
