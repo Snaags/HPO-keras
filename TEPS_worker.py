@@ -23,6 +23,57 @@ def load_dataset():
     y_test = np.load(path+"y_test.npy")        
     return x_train, y_train,x_test,y_test
 
+
+def build_conv_layer(layer_number : int , previous_layer, hyperparameter_conf):
+
+    layer_type = hyperparameter_conf["conv_"+str(layer_number)+"_type"] 
+    if layer_number > 1: 
+        previous_type = hyperparameter_conf["conv_"+str(layer_number-1)+"_type"] 
+    else:
+        previous_type = None
+    hyperparameters = hyperparameter_conf
+    layer_args = dict() 
+    for parameter_name in hyperparameters:
+        if "conv_"+str(layer_number) in parameter_name and "_type" not in parameter_name :
+            layer_args[parameter_name.replace("conv_"+str(layer_number)+"_",'')] = hyperparameters[parameter_name]
+    print(layer_args) 
+    function = eval("keras.layers."+layer_type)
+    print(previous_layer )
+    if layer_args["BatchNormalization"] == 1:
+        layer_args.pop("BatchNormalization")
+        layer = function(**layer_args,data_format = "channels_first")(previous_layer)
+        layer = keras.layers.BatchNormalization()(layer)
+        layer = keras.layers.ReLU()(layer)
+    else:
+        layer_args.pop("BatchNormalization")
+        layer = function(**layer_args)(previous_layer)
+        layer = keras.layers.ReLU()(layer)
+    return layer
+
+
+def build_dense_layer(layer_number : int , previous_layer, hyperparameter_conf):
+
+    layer_type = hyperparameter_conf["dense_"+str(layer_number)+"_type"] 
+    if layer_number > 1: 
+        previous_type = hyperparameter_conf["dense_"+str(layer_number-1)+"_type"] 
+    else:
+        previous_type = "Conv1D"
+    hyperparameters = hyperparameter_conf
+    layer_args = dict() 
+    for parameter_name in hyperparameters:
+        if "dense_"+str(layer_number) in parameter_name and "_type" not in parameter_name :
+            layer_args[parameter_name.replace("dense_"+str(layer_number)+"_",'')] = hyperparameters[parameter_name]
+    print(layer_args) 
+    function = eval("keras.layers."+layer_type)
+    print(previous_layer )
+    if previous_type == "Conv1D":     
+        gap = keras.layers.GlobalAveragePooling1D()(previous_layer)
+        layer = function(**layer_args,activation = "ReLU")(gap)
+   
+    return layer
+
+
+
 def build_layer(layer_number : int , previous_layer, hyperparameter_conf):
 
     layer_type = hyperparameter_conf["layer_"+str(layer_number)+"_type"] 
@@ -64,10 +115,10 @@ def make_model(input_shape, output_size,hyperparameters):
     ##Layer 1                
     for layer in range(1,hyperparameters["num_conv_layers"]+1):
         print(layer)
-        layers.append(build_layer(layer,layers[-1],hyperparameters) )
+        layers.append(build_conv_layer(layer,layers[-1],hyperparameters) )
     for layer in range(1,hyperparameters["num_dense_layers"]+1):
         print(layer)
-        layers.append(build_layer(layer,layers[-1],hyperparameters) )
+        layers.append(build_dense_layer(layer,layers[-1],hyperparameters) )
     layers.append(keras.layers.Dense(output_size,activation = "softmax")(layers[-1]))
     return keras.models.Model(inputs=input_layer, outputs=layers[-1])
 
