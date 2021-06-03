@@ -97,14 +97,29 @@ def init_config():
         layer_3_filters,
         layer_3_BatchNormalization,
         layer_3_kernel_size,
-        window,
         layer_4_type,
-        layer_4_units,
+        layer_4_padding,
+        layer_4_filters,
+        layer_4_BatchNormalization,
+        layer_4_kernel_size,
+        layer_5_type,
+        layer_5_padding,
+        layer_5_filters,
+        layer_5_BatchNormalization,
+        layer_5_kernel_size,
+        window,
+        layer_1_type,
+        layer_1_units,
+        layer_2_type,
+        layer_2_units,
+        layer_3_type,
+        layer_3_units,
         epochs,
         batch_size,
         optimiser,
         lr,
-        num_layers
+        num_conv_layers,
+        num_dense_layers
     ]
     cs.add_hyperparameters(hp_list)
     conv_hp_list = [    

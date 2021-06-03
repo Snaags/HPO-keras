@@ -8,14 +8,14 @@ import hpbandster.core.result as hpres
 
 from hpbandster.optimizers import BOHB as BOHB
 from hpbandster.optimizers import RandomSearch as RandomSearch
-from worker_hp_ford import MyWorker
+from worker_hp_TEPS import MyWorker
 
 
 
 parser = argparse.ArgumentParser(description='Example 1 - sequential and local execution.')
-parser.add_argument('--min_budget',   type=float, help='Minimum budget used during the optimization.',    default=2000000)
-parser.add_argument('--max_budget',   type=float, help='Maximum budget used during the optimization.',    default=5000000)
-parser.add_argument('--n_iterations', type=int,   help='Number of iterations performed by the optimizer', default=200)
+parser.add_argument('--min_budget',   type=float, help='Minimum budget used during the optimization.',    default=2)
+parser.add_argument('--max_budget',   type=float, help='Maximum budget used during the optimization.',    default=5)
+parser.add_argument('--n_iterations', type=int,   help='Number of iterations performed by the optimizer', default=20)
 args=parser.parse_args()
 
 
