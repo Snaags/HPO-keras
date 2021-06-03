@@ -4,6 +4,11 @@ import os
 import csv
 import time 
 
+def batch_add_cond(cs,a_list, b,num):
+    for a in a_list:
+        cond = CS.GreaterThanCondition(a,b,num)
+        cs.add_condition(cond)  
+    return 0
 def init_config():
     cs = CS.ConfigurationSpace()
     ###Training Configuration###
@@ -79,4 +84,6 @@ def init_config():
     ]
     cs.add_hyperparameters(hp_list)
 
+    for i in range(max_conv_layers):
+        batch_add_cond(cs,layer_conv,num_conv_layers,layer)
     return cs

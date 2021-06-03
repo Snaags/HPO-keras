@@ -27,10 +27,9 @@ def build_layer(layer_number : int , previous_layer, hyperparameter_conf):
 
     layer_type = hyperparameter_conf["layer_"+str(layer_number)+"_type"] 
     hyperparameters = hyperparameter_conf
-    hyperparameters.pop("layer_"+str(layer_number)+"_type")
     layer_args = dict() 
     for parameter_name in hyperparameters:
-        if "layer_"+str(layer_number) in parameter_name:
+        if "layer_"+str(layer_number) in parameter_name and "_type" not in parameter_name :
             layer_args[parameter_name.replace("layer_"+str(layer_number)+"_",'')] = hyperparameters[parameter_name]
     print(layer_args) 
     function = eval("keras.layers."+layer_type)
