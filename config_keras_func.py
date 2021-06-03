@@ -129,16 +129,16 @@ def init_config():
        "layer_@_BatchNormalization",
        "layer_@_kernel_size"]
 
-    for layer in range(max_conv_layers):
-        layer_parameter_list = generate_layer_hp(layer)
-        batch_add_cond(cs,layer_parameter_list,layer)
+    for layer in range(1,max_conv_layers+1):
+        layer_parameter_list = generate_layer_hp(conv_hp_list ,layer)
+        batch_add_cond(cs,layer_parameter_list,num_conv_layers,layer)
 
     cs.add_hyperparameters(hp_list)
     dense_hp_list = [    
 
        "layer_@_type",
        "layer_@_units"]
-    for layer in range(max_dense_layers):
-        layer_parameter_list = generate_layer_hp(layer)
-        batch_add_cond(cs,layer_parameter_list,layer)
+    for layer in range(1,max_dense_layers+1):
+        layer_parameter_list = generate_layer_hp(dense_hp_list ,layer)
+        batch_add_cond(cs,layer_parameter_list,num_dense_layers,layer)
     return cs
