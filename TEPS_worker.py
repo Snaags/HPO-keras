@@ -26,6 +26,10 @@ def load_dataset():
 def build_layer(layer_number : int , previous_layer, hyperparameter_conf):
 
     layer_type = hyperparameter_conf["layer_"+str(layer_number)+"_type"] 
+    if layer_number > 1: 
+        previous_type = hyperparameter_conf["layer_"+str(layer_number-1)+"_type"] 
+    else:
+        previous_type = None
     hyperparameters = hyperparameter_conf
     layer_args = dict() 
     for parameter_name in hyperparameters:
@@ -34,7 +38,7 @@ def build_layer(layer_number : int , previous_layer, hyperparameter_conf):
     print(layer_args) 
     function = eval("keras.layers."+layer_type)
     print(previous_layer )
-    if layer_type == "Dense":
+    if layer_type == "Dense" and previous_type == "Conv1D":
             
         gap = keras.layers.GlobalAveragePooling1D()(previous_layer)
         layer = function(**layer_args,activation = "ReLU")(gap)
@@ -58,7 +62,10 @@ def make_model(input_shape, output_size,hyperparameters):
     input_layer = keras.layers.Input(input_shape)
     layers = [input_layer]
     ##Layer 1                
-    for layer in range(1,hyperparameters["num_layers"]+1):
+    for layer in range(1,hyperparameters["num_conv_layers"]+1):
+        print(layer)
+        layers.append(build_layer(layer,layers[-1],hyperparameters) )
+    for layer in range(1,hyperparameters["num_dense_layers"]+1):
         print(layer)
         layers.append(build_layer(layer,layers[-1],hyperparameters) )
     layers.append(keras.layers.Dense(output_size,activation = "softmax")(layers[-1]))
