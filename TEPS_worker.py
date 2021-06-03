@@ -2,6 +2,7 @@ import numpy as np
 from tensorflow import keras
 import matplotlib.pyplot as plt
 from sklearn.utils import shuffle
+from window import window_array
 """
 ## Build a model
 
@@ -69,13 +70,16 @@ def main(hyperparameter,budget):
     
         
 
-    train_samples = int(budget)
-    test_samples = 100000
+    train_samples = int(900000)
+    test_samples = 90000
     num_classes = 21
     x_train,y_train,x_test,y_test = load_dataset()
+    x_train,y_train = window_array(x_train[:1000000] , y_train[:1000000], hyperparameter["window_size"])
+    x_test,y_test = window_array(x_test[:100000] , y_test[:100000], hyperparameter["window_size"])
     classes = np.unique(y_train)
     print(x_train.shape)
-    
+    x_train = np.squeeze(x_train)
+    x_test = np.squeeze(x_test)
     x_train,y_train = shuffle(x_train,y_train)
     x_test,y_test = shuffle(x_test,y_test,n_samples = test_samples)
     print(x_train.shape)
@@ -87,7 +91,7 @@ def main(hyperparameter,budget):
     
     """
     num_classes = 21
-    epochs = 3 
+    epochs = int(budget)
     batch_size = 256 
     
     callbacks = [
@@ -143,9 +147,9 @@ def main(hyperparameter,budget):
     """
 if __name__ == "__main__":
     hyperparameter = {"batch_size": 32, "epochs": 50, 
-    "layer_1_BatchNormalization": 0, "layer_1_filters": 109, "layer_1_kernel_size": 2, "layer_1_padding": "same", "layer_1_type": "Conv1D", 
-    "layer_2_BatchNormalization": 1, "layer_2_filters": 93, "layer_2_kernel_size": 2, "layer_2_padding": "same", "layer_2_type": "Conv1D", 
-    "layer_3_BatchNormalization": 1, "layer_3_filters": 21, "layer_3_kernel_size": 6, "layer_3_padding": "same", "layer_3_type": "Conv1D", 
+    "layer_1_BatchNormalization": 0, "layer_1_filters": 109, "layer_1_kernel_size": 16, "layer_1_padding": "same", "layer_1_type": "Conv1D", 
+    "layer_2_BatchNormalization": 1, "layer_2_filters": 93, "layer_2_kernel_size": 8, "layer_2_padding": "same", "layer_2_type": "Conv1D", 
+    "layer_3_BatchNormalization": 1, "layer_3_filters": 21, "layer_3_kernel_size": 4, "layer_3_padding": "same", "layer_3_type": "Conv1D", 
     "layer_4_type": "Dense", "layer_4_units": 35, "num_layers": 4,
-     "optimiser": "Adam", "optimiser_lr": 1.2028420169154692e-05}
+     "window_size":16, "optimiser": "Adam", "optimiser_lr": 1.2028420169154692e-05}
     main(hyperparameter,20 )

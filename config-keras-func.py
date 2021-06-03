@@ -4,13 +4,19 @@ import os
 import csv
 import time 
 
+
+def batch_add_cond(cs,a_list, b,num):
+    for a in a_list:
+        cond = CS.GreaterThanCondition(a,b,num)
+        cs.add_condition(cond)  
+    return 0
 def init_config():
     cs = CS.ConfigurationSpace()
     ###Training Configuration###
     epochs = CSH.Constant(name = "epochs",value = 50)
     batch_size = CSH.Constant(name = "batch_size",value = 32)
-    num_layers = CSH.Constant(name = "num_layers",value =4)
-
+    num_conv_layers = CSH.Constant(name = "num_layers",value =4)
+    num_dense_layers = CSH.Constant(name = "num_layers",value =4)
     ###Optimiser###
     optimiser  = CSH.Constant(name = "optimiser", value = "Adam"		) 
     lr =CSH.UniformFloatHyperparameter(name = "optimiser_lr",			lower = 1e-8,upper = 5e-1 ,log = True ) #lr
@@ -78,7 +84,9 @@ def init_config():
         num_layers
     ]
     cs.add_hyperparameters(hp_list)
-
+    
+    for i in range(max_conv_layers):
+    batch_add_cond(cs,layer_conv,num_conv_layers,layer)
     return cs
 
 scores = []
