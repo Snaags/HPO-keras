@@ -15,7 +15,7 @@ def batch_add_cond(cs,a_list, b,num):
     return 0
 def init_config():
     max_conv_layers = 5
-    max_dense_layers = 4
+    max_dense_layers = 3
     cs = CS.ConfigurationSpace()
     ###Training Configuration###
     epochs = CSH.Constant(name = "epochs",value = 50)
