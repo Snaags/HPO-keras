@@ -65,14 +65,14 @@ def init_config():
     conv_5_BatchNormalization = CSH.UniformIntegerHyperparameter(name = "conv_5_BatchNormalization", lower = 0,upper = 1)
     conv_5_kernel_size = CSH.UniformIntegerHyperparameter(name = "conv_5_kernel_size", lower =1 ,upper =16)
     
-    dense_1_type = CSH.Constant(name = "dense_4_type", value = "Dense")
-    dense_1_units = CSH.UniformIntegerHyperparameter(name = "dense_4_units", lower = 16, upper = 228)
+    dense_1_type = CSH.Constant(name = "dense_1_type", value = "Dense")
+    dense_1_units = CSH.UniformIntegerHyperparameter(name = "dense_1_units", lower = 16, upper = 228)
 
-    dense_2_type = CSH.Constant(name = "dense_4_type", value = "Dense")
-    dense_2_units = CSH.UniformIntegerHyperparameter(name = "dense_4_units", lower = 16, upper = 128)
+    dense_2_type = CSH.Constant(name = "dense_2_type", value = "Dense")
+    dense_2_units = CSH.UniformIntegerHyperparameter(name = "dense_2_units", lower = 16, upper = 128)
 
-    dense_3_type = CSH.Constant(name = "dense_4_type", value = "Dense")
-    dense_3_units = CSH.UniformIntegerHyperparameter(name = "dense_4_units", lower = 16, upper = 128)
+    dense_3_type = CSH.Constant(name = "dense_3_type", value = "Dense")
+    dense_3_units = CSH.UniformIntegerHyperparameter(name = "dense_3_units", lower = 16, upper = 128)
     
     #layer_4_padding = CSH.Constant(name = "padding",value = "same")
     #layer_4_filters = CSH.UniformIntegrerHyperparameter(name = "filters", lower = 16 ,upper = 128)
