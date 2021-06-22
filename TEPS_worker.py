@@ -2,7 +2,11 @@ import numpy as np
 from tensorflow import keras
 import matplotlib.pyplot as plt
 from sklearn.utils import shuffle
-from window import window_array
+from window import window_array_random
+from keras_model import make_model
+from sklearn.metrics import confusion_matrix
+import pandas as pd
+
 """
 ## Build a model
 
@@ -24,122 +28,65 @@ def load_dataset():
     return x_train, y_train,x_test,y_test
 
 
-def build_conv_layer(layer_number : int , previous_layer, hyperparameter_conf):
-
-    layer_type = hyperparameter_conf["conv_"+str(layer_number)+"_type"] 
-    if layer_number > 1: 
-        previous_type = hyperparameter_conf["conv_"+str(layer_number-1)+"_type"] 
-    else:
-        previous_type = None
-    hyperparameters = hyperparameter_conf
-    layer_args = dict() 
-    for parameter_name in hyperparameters:
-        if "conv_"+str(layer_number) in parameter_name and "_type" not in parameter_name :
-            layer_args[parameter_name.replace("conv_"+str(layer_number)+"_",'')] = hyperparameters[parameter_name]
-    print(layer_args) 
-    function = eval("keras.layers."+layer_type)
-    print(previous_layer )
-    if layer_args["BatchNormalization"] == 1:
-        layer_args.pop("BatchNormalization")
-        layer = function(**layer_args,data_format = "channels_first")(previous_layer)
-        layer = keras.layers.BatchNormalization()(layer)
-        layer = keras.layers.ReLU()(layer)
-    else:
-        layer_args.pop("BatchNormalization")
-        layer = function(**layer_args)(previous_layer)
-        layer = keras.layers.ReLU()(layer)
-    return layer
+def load_dataset_without_fault(fault_nums : list):
+    path = "/home/snaags/scripts/HPO-keras/datasets/TEPS/"
+    x_train = np.load(path+"x_train.npy")
+    y_train =    np.load(path+"y_train.npy")
+    x_test =np.load(path+"x_test.npy")
+    y_test = np.load(path+"y_test.npy")
 
 
-def build_dense_layer(layer_number : int , previous_layer, hyperparameter_conf):
+    for i in fault_nums:
+        idx = np.where(y_train == i)
 
-    layer_type = hyperparameter_conf["dense_"+str(layer_number)+"_type"] 
-    if layer_number > 1: 
-        previous_type = hyperparameter_conf["dense_"+str(layer_number-1)+"_type"] 
-    else:
-        previous_type = "Conv1D"
-    hyperparameters = hyperparameter_conf
-    layer_args = dict() 
-    for parameter_name in hyperparameters:
-        if "dense_"+str(layer_number) in parameter_name and "_type" not in parameter_name :
-            layer_args[parameter_name.replace("dense_"+str(layer_number)+"_",'')] = hyperparameters[parameter_name]
-    print(layer_args) 
-    function = eval("keras.layers."+layer_type)
-    print(previous_layer )
-    if previous_type == "Conv1D":     
-        gap = keras.layers.GlobalAveragePooling1D()(previous_layer)
-        layer = function(**layer_args,activation = "ReLU")(gap)
-   
-    return layer
+        y_train = np.delete(y_train,idx,axis = 0)
 
+        x_train = np.delete(x_train,idx,axis = 0)
 
+    for index, i in enumerate(fault_nums):
+        i = i - index
+        for index, y in enumerate(y_train):
+            if y > i:
+                y_train[index] = y - 1
 
-def build_layer(layer_number : int , previous_layer, hyperparameter_conf):
+    for i in fault_nums:
+        idx = np.where(y_test == i)
+        y_test = np.delete(y_test,idx[0],axis = 0)
+        x_test = np.delete(x_test,idx[0],axis = 0)
 
-    layer_type = hyperparameter_conf["layer_"+str(layer_number)+"_type"] 
-    if layer_number > 1: 
-        previous_type = hyperparameter_conf["layer_"+str(layer_number-1)+"_type"] 
-    else:
-        previous_type = None
-    hyperparameters = hyperparameter_conf
-    layer_args = dict() 
-    for parameter_name in hyperparameters:
-        if "layer_"+str(layer_number) in parameter_name and "_type" not in parameter_name :
-            layer_args[parameter_name.replace("layer_"+str(layer_number)+"_",'')] = hyperparameters[parameter_name]
-    print(layer_args) 
-    function = eval("keras.layers."+layer_type)
-    print(previous_layer )
-    if layer_type == "Dense" and previous_type == "Conv1D":
-            
-        gap = keras.layers.GlobalAveragePooling1D()(previous_layer)
-        layer = function(**layer_args,activation = "ReLU")(gap)
-   
-    if layer_type == "Conv1D": 
-        if layer_args["BatchNormalization"] == 1:
-            layer_args.pop("BatchNormalization")
-            layer = function(**layer_args,data_format = "channels_first")(previous_layer)
-            layer = keras.layers.BatchNormalization()(layer)
-            layer = keras.layers.ReLU()(layer)
-        else:
-            layer_args.pop("BatchNormalization")
-            layer = function(**layer_args)(previous_layer)
-            layer = keras.layers.ReLU()(layer)
-    ##TODO 
-        #Add conditional features of different layer types batch pooling etc 
-    return layer
-    
+    for index, i in enumerate(fault_nums):
+        i = i - index
+        for index, y in enumerate(y_test):
+            if y > i:
+                y_test[index] = y - 1
 
-def make_model(input_shape, output_size,hyperparameters):
-    input_layer = keras.layers.Input(input_shape)
-    layers = [input_layer]
-    ##Layer 1                
-    for layer in range(1,hyperparameters["num_conv_layers"]+1):
-        print(layer)
-        layers.append(build_conv_layer(layer,layers[-1],hyperparameters) )
-    for layer in range(1,hyperparameters["num_dense_layers"]+1):
-        print(layer)
-        layers.append(build_dense_layer(layer,layers[-1],hyperparameters) )
-    layers.append(keras.layers.Dense(output_size,activation = "softmax")(layers[-1]))
-    return keras.models.Model(inputs=input_layer, outputs=layers[-1])
+    return x_train, y_train,x_test,y_test
 
-
-def main(hyperparameter,budget):
+def main(hyperparameter,budget = 10):
     
         
 
     train_samples = int(900000)
-    test_samples = 90000
-    num_classes = 21
+    test_samples = 10000
+
+
     x_train,y_train,x_test,y_test = load_dataset()
-    x_train,y_train = window_array(x_train[:1000000] , y_train[:1000000], hyperparameter["window_size"])
-    x_test,y_test = window_array(x_test[:100000] , y_test[:100000], hyperparameter["window_size"])
+    num_classes = len(np.unique(y_train))
     classes = np.unique(y_train)
+
+    x_train,y_train = window_array_random(x_train , y_train, hyperparameter["window_size"], 500000)
+    x_test,y_test = window_array_random(x_test , y_test, hyperparameter["window_size"],100000)
+
+   
+    print("Training classes: ",classes)
+    print("Testing classes: ",np.unique(y_test))
     print(x_train.shape)
     x_train = np.squeeze(x_train)
     x_test = np.squeeze(x_test)
     x_train,y_train = shuffle(x_train,y_train)
-    x_test,y_test = shuffle(x_test,y_test,n_samples = test_samples)
+    x_test,y_test = shuffle(x_test,y_test)
     print(x_train.shape)
+    print(hyperparameter)
     model = make_model(input_shape=x_train.shape[1:],output_size = num_classes,hyperparameters = hyperparameter)
     keras.utils.plot_model(model, show_shapes=True)
         
@@ -147,7 +94,6 @@ def main(hyperparameter,budget):
     ## Train the model
     
     """
-    num_classes = 21
     epochs = int(budget)
     batch_size = 256 
     
@@ -161,8 +107,9 @@ def main(hyperparameter,budget):
         keras.callbacks.EarlyStopping(monitor="val_loss", patience=50, verbose=1),
     ]
     opt = keras.optimizers.Adam(learning_rate = hyperparameter["optimiser_lr"])
+    
     model.compile(
-        optimizer="adam",
+        optimizer=opt,
         loss="sparse_categorical_crossentropy",
         metrics=["sparse_categorical_accuracy"],
     )
@@ -182,9 +129,39 @@ def main(hyperparameter,budget):
     """
     
     model = keras.models.load_model("best_model.h5")
-    
+
+    def convert_labels(y):
+        samples = y.shape[0]
+        classes = np.unique(y)
+        one_hot_arr = np.zeros(shape = (samples,len(classes)))
+        print(one_hot_arr.shape)
+        for count,label_value in enumerate(y):
+            one_hot_arr[count,int(label_value)] = 1
+
+
+        return one_hot_arr
+
+
+
+    def convert_label_max_only(y):
+        idx = np.argmax(y,axis = 1)
+        print(idx)
+        out = np.zeros_like(y)
+        for count, i in enumerate(idx):
+            out[count, i] = 1
+        return idx
+
     test_loss, test_acc = model.evaluate(x_test, y_test)
-    
+
+    y_pred = model.predict(x_test)
+    from sklearn.metrics import ConfusionMatrixDisplay
+    #y_1_hot = convert_labels(y_test)
+    y_pred = convert_label_max_only(y_pred)
+    print(y_pred, y_test)
+    confusion_matrix_output = confusion_matrix(y_test,y_pred)
+    disp = ConfusionMatrixDisplay(confusion_matrix_output)
+    disp.plot()
+    plt.savefig(str(test_acc)+".png",dpi = 1200)
     print("Test accuracy", test_acc)
     print("Test loss", test_loss)
     
@@ -203,10 +180,17 @@ def main(hyperparameter,budget):
     the model starts overfitting.
     """
 if __name__ == "__main__":
-    hyperparameter = {"batch_size": 32, "epochs": 50, 
-    "layer_1_BatchNormalization": 0, "layer_1_filters": 109, "layer_1_kernel_size": 16, "layer_1_padding": "same", "layer_1_type": "Conv1D", 
-    "layer_2_BatchNormalization": 1, "layer_2_filters": 93, "layer_2_kernel_size": 8, "layer_2_padding": "same", "layer_2_type": "Conv1D", 
-    "layer_3_BatchNormalization": 1, "layer_3_filters": 21, "layer_3_kernel_size": 4, "layer_3_padding": "same", "layer_3_type": "Conv1D", 
-    "layer_4_type": "Dense", "layer_4_units": 35, "num_layers": 4,
-     "window_size":16, "optimiser": "Adam", "optimiser_lr": 1.2028420169154692e-05}
-    main(hyperparameter,20 )
+    hyperparameter = {"batch_size": 32, 
+    "conv_1_BatchNormalization": 0, "conv_1_filters": 52, "conv_1_kernel_size": 1, "conv_1_padding": "same", "conv_1_type": "Conv1D", 
+    "dense_1_type": "Dense", "dense_1_units": 40,
+    "dense_2_type": "Dense", "dense_2_units": 30,
+    "dense_3_type": "Dense", "dense_3_units": 25,
+     "epochs": 50, "num_conv_layers": 3, "num_dense_layers": 2, "optimiser": "Adam", "optimiser_lr": 0.013908363691981195, 
+     "window_size": 100, 
+     "conv_2_BatchNormalization": 1, "conv_2_filters": 52, "conv_2_kernel_size": 2, "conv_2_padding": "same", "conv_2_type": "Conv1D", 
+     "conv_3_BatchNormalization": 1, "conv_3_filters": 52, "conv_3_kernel_size": 4, "conv_3_padding": "same", "conv_3_type": "Conv1D",
+     "conv_4_BatchNormalization": 1, "conv_4_filters": 52, "conv_4_kernel_size": 8, "conv_4_padding": "same", "conv_4_type": "Conv1D",
+     "conv_5_BatchNormalization": 1, "conv_5_filters": 52, "conv_5_kernel_size": 16, "conv_5_padding": "same", "conv_5_type": "Conv1D"} 
+
+    main(hyperparameter,5 )
+

@@ -5,11 +5,27 @@ import hpbandster.visualization as hpvis
 import os
 import numpy as np
 
+def random_model_over_time(runs, id2conf, show=False):
+    model_based_runs = list(filter(lambda r: id2conf[r.config_id]['config_info']['model_based_pick'], runs))
+    random_runs = list(filter(lambda r: not id2conf[r.config_id]['config_info']['model_based_pick'], runs))
+    model_l = []
+    random_l = []
+    for r in model_based_runs:
+        if r.loss is None or not np.isfinite(r.loss):
+            continue
+        model_l.append(r.loss)
+    for r in random_runs:
+        if r.loss is None or not np.isfinite(r.loss):
+            continue
+        random_l.append(r.loss)
+ 
+    plt.scatter(range(len(model_l)),model_l ,alpha = 0.4,c = "r")
+    plt.scatter(range(len(random_l)),random_l ,alpha = 0.4,c = "b")
+    plt.show()
 
 def performance_histogram_model_vs_random(runs, id2conf, show=False):
     model_based_runs = list(filter(lambda r: id2conf[r.config_id]['config_info']['model_based_pick'], runs))
     random_runs = list(filter(lambda r: not id2conf[r.config_id]['config_info']['model_based_pick'], runs))
-
     budgets = list(set([r.budget for r in runs]))
     budgets.sort()
 
@@ -27,11 +43,12 @@ def performance_histogram_model_vs_random(runs, id2conf, show=False):
             continue
         losses[r.budget]['random'].append(r.loss)
 
-    fig, axarr = plt.subplots(len(budgets), 1, sharey='row', sharex='all')
+    fig, axarr = plt.subplots(len(budgets), 2, sharey='row', sharex='all')
     plt.suptitle('Loss of model based configurations vs. random configuration')
 
     for i,b in enumerate(budgets):
-        mbax = axarr[i]
+        mbax, rax = axarr[i]
+        print(mbax)
         mbax.hist(losses[b]['model_based'], bins = 50,label='Model Based',alpha = 0.5)
         mbax.set_ylabel('frequency')
         plt.xlim(0,0.5)
@@ -52,7 +69,7 @@ def performance_histogram_model_vs_random(runs, id2conf, show=False):
 
 
 
-os.chdir("/home/snaags/scripts/HPO-keras")
+os.chdir("/home/snaags/scripts/")
 def extract(runs,data,name):
     data[name+" ID"] = [] 
     data[name+" loss"] = [] 
@@ -95,8 +112,8 @@ def get_min_loss(data,name):
 
 #%%
 # load the example run from the log files
-full = "/home/snaags/scripts/logs_BOHB_full"
-limited = "/home/snaags/scripts/logs_BOHB_50"
+full = "/home/snaags/scripts/logs_ford_full_window"
+limited = "/home/snaags/scripts/logs_TEPS_BO_FULL"
 
 limited_run_data = hpres.logged_results_to_HBS_result(limited)
 
@@ -128,7 +145,7 @@ get_linked(data,"limited loss min", "limited loss","limited info")
 from sklearn.preprocessing import StandardScaler
 
 plt.hist(data["limited loss"],label = "Full Test Scores",bins = 100,alpha = 0.6)
-plt.hist(data["limited info"],label = "Reduced Test Scores",bins = 100,alpha = 0.6)
+#plt.hist(data["limited info"],label = "Reduced Test Scores",bins = 100,alpha = 0.6)
 plt.legend()
 plt.xlabel("Loss")
 plt.ylabel("Occurrence")
@@ -143,28 +160,27 @@ plt.ylabel("Occurances")
 plt.show()
 
 mean = np.mean(data["full loss"])
-mean2 = np.mean(data["limited loss"])
-plt.scatter(range(len(data["limited loss"])),data["limited loss"], alpha = 0.4,c = "grey")
-#plt.scatter(range(len(data["full loss"])),data["full loss"], alpha = 0.4,c = "r")
-plt.scatter(range(len(data["limited info"])),data["limited info"], alpha = 0.4,c = "b")
-plt.plot(range(len(data["limited loss min"])),data["limited loss min"],label="Restricted Validation Set",c = "grey")
-#plt.plot(range(len(data["full loss min"])),data["full loss min"],label="Large Validation Set Scores",c= "r")
+#mean2 = np.mean(data["limited loss"])
+#plt.scatter(range(len(data["limited loss"])),data["limited loss"], alpha = 0.4,c = "grey")
+plt.scatter(range(len(data["full loss"])),data["full loss"], alpha = 0.4,c = "r")
+#plt.scatter(range(len(data["limited info"])),data["limited info"], alpha = 0.4,c = "b")
+#plt.plot(range(len(data["limited loss min"])),data["limited loss min"],label="Restricted Validation Set",c = "grey")
+plt.plot(range(len(data["full loss min"])),data["full loss min"],label="Large Validation Set Scores",c= "r")
 #plt.plot(range(len(data["limited info min"])),data["limited info min"],label="Restricted Validation Set Base True Scores")
-plt.plot(range(len(data["limited loss min linked"])),data["limited loss min linked"],label="Full Validation Set",c = "b")
+#plt.plot(range(len(data["limited loss min linked"])),data["limited loss min linked"],label="Full Validation Set",c = "b")
 plt.xlabel("Iteration")
 plt.ylabel("Sparse Catagorical Loss")
 plt.legend()
-plt.ylim(0,0.6)
+
 plt.xlim(0,300)
 plt.grid()
 plt.show()
 # the number of concurent runs,
+
+
 hpvis.concurrent_runs_over_time(runs)
-
-
-
-
 performance_histogram_model_vs_random(runs, id2conf)
-
 plt.show()
+
+random_model_over_time(runs,id2conf)
 # %%

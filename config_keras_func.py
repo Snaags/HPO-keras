@@ -3,16 +3,10 @@ import ConfigSpace.hyperparameters as CSH
 import os
 import csv
 import time 
-def generate_layer_hp(hp_list, layer_num):
-    for idx, i in enumerate(hp_list):
-        i.replace("@",layer_num)
-        hp_list[idx] = eval(i)
-    return hp_list
-def batch_add_cond(cs,a_list, b,num):
-    for a in a_list:
-        cond = CS.GreaterThanCondition(a,b,num)
-        cs.add_condition(cond)  
-    return 0
+
+
+
+
 def init_config():
     max_conv_layers = 5
     max_dense_layers = 3
@@ -21,7 +15,7 @@ def init_config():
     epochs = CSH.Constant(name = "epochs",value = 50)
     batch_size = CSH.Constant(name = "batch_size",value = 32)
     num_conv_layers = CSH.UniformIntegerHyperparameter(name = "num_conv_layers",lower =1 ,upper = max_conv_layers)
-    num_dense_layers = CSH.UniformIntegerHyperparameter(name = "num_dense_layers",lower =1 ,upper = max_conv_layers)
+    num_dense_layers = CSH.UniformIntegerHyperparameter(name = "num_dense_layers",lower =1 ,upper = max_dense_layers)
 
 
     ###Optimiser###
@@ -37,7 +31,7 @@ def init_config():
     conv_1_filters = CSH.UniformIntegerHyperparameter(name = "conv_1_filters", lower = 16 ,upper = 128)
     conv_1_BatchNormalization = CSH.UniformIntegerHyperparameter(name = "conv_1_BatchNormalization", lower = 0,upper = 1)
     conv_1_kernel_size = CSH.UniformIntegerHyperparameter(name = "conv_1_kernel_size", lower =1 ,upper =16)
-
+     
 
 
 
@@ -123,22 +117,42 @@ def init_config():
     ]
     cs.add_hyperparameters(hp_list)
     conv_hp_list = [    
-       "layer_@_type",
-       "layer_@_padding",
-       "layer_@_filters",
-       "layer_@_BatchNormalization",
-       "layer_@_kernel_size"]
+       "conv_@_type",
+       "conv_@_padding",
+       "conv_@_filters",
+       "conv_@_BatchNormalization",
+       "conv_@_kernel_size"]
 
+    def generate_layer_hp(hp_list, layer_num):
+        for idx, i in enumerate(hp_list):
+            x = i.replace("@",str(layer_num))
+            print(i)
+            hp_list[idx] = eval(x)
+        return hp_list
+    def batch_add_cond(cs,a_list, b,num):
+        for a in a_list:
+            if num != 1:
+            
+                cond = CS.GreaterThanCondition(a,b,num -1 )
+                cs.add_condition(cond)  
+        return 0
     for layer in range(1,max_conv_layers+1):
-        layer_parameter_list = generate_layer_hp(conv_hp_list ,layer)
+        layer_parameter_list = []
+        for idx, i in enumerate(conv_hp_list):
+            x = i.replace("@",str(layer))
+            print(x)
+            layer_parameter_list.append(eval(x))
         batch_add_cond(cs,layer_parameter_list,num_conv_layers,layer)
 
-    cs.add_hyperparameters(hp_list)
     dense_hp_list = [    
 
-       "layer_@_type",
-       "layer_@_units"]
+       "dense_@_type",
+       "dense_@_units"]
     for layer in range(1,max_dense_layers+1):
-        layer_parameter_list = generate_layer_hp(dense_hp_list ,layer)
+        layer_parameter_list = []
+        for idx, i in enumerate(dense_hp_list):
+            x = i.replace("@",str(layer))
+            print(i)
+            layer_parameter_list.append(eval(x))
         batch_add_cond(cs,layer_parameter_list,num_dense_layers,layer)
     return cs

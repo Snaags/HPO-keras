@@ -68,12 +68,7 @@ get_min(data,"full loss")
 #get_linked(data,"limited loss min", "limited loss","limited info")
 
 
-plt.scatter(range(len(data["limited loss"])),data["limited loss"], alpha = 0.4,c = "grey")
-#plt.scatter(range(len(data["full loss"])),data["full loss"], alpha = 0.4,c = "r")
-plt.scatter(range(len(data["limited info"])),data["limited info"], alpha = 0.4,c = "b")
-plt.plot(range(len(data["limited loss min"])),data["limited loss min"],label="Restricted Validation Set",c = "grey")
-#plt.plot(range(len(data["full loss min"])),data["full loss min"],label="Large Validation Set Scores",c= "r")
-#plt.plot(range(len(data["limited info min"])),data["limited info min"],label="Restricted Validation Set Base True Scores")
+plt.scatter(range(len(data["full loss"])),data["full loss"], alpha = 0.4,c = "r")
 
 plt.xlabel("Iteration")
 plt.ylabel("Sparse Catagorical Loss")

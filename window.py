@@ -1,5 +1,7 @@
 import numpy as np
 import math
+import os
+import random
 def window_array(x_arr,y_arr , window_size : int, step_size :int =1):
     """
     splits array into set of sequences of window_size.
@@ -20,15 +22,50 @@ def window_array(x_arr,y_arr , window_size : int, step_size :int =1):
         y_output[c] = y_arr[(c*step_size)+window_size-1 ]
     return x_output, y_output
     
+                    
+def reduce_array_memory_usage(array, reduction : float):
+    """
+    removes entries from the array to reduce memory usage
+
+    """
+    if random.randint(0,1) == 1:
+        return array[int(array.shape[0]*reduction):]
+
+    else: 
+        return array[:-int(array.shape[0]*reduction)]
+    
+
+  
+def window_array_random(x_arr,y_arr , window_size : int, n_samples :int):
+
+    """
+    splits array into set of sequences of window_size.
+    
+    Randomly select windows of size window_size from a location in x_arr     
+
+    x_arr should be a np array of shape (timesteps, features)
+    """
+    
+    # Getting all memory using os.popen()
+    total_memory, used_memory, free_memory = map(int, os.popen('free -t -m').readlines()[-1].split()[1:])
+      
+    # Memory usage
+    print("RAM memory % used:", round((used_memory/total_memory) * 100, 2))
+    windowed_array_x = list()
+    windowed_array_y = list()
+    for i in range(n_samples):
+        random_index = random.randint(0,x_arr.shape[0]-window_size-1)
+        window = x_arr[random_index:random_index+window_size]
+        windowed_array_y.append(y_arr[random_index+window_size])
+        windowed_array_x.append(window)
+    print(len(windowed_array_x))
+    return np.array(windowed_array_x, dtype = np.float32), np.array(windowed_array_y, dtype = np.float32)
+
+ 
+        
 if __name__ == "__main__":
     ##Tests 
-    size = 8
-    arr_1 = np.arange(100)
-    arr_2 = np.arange(100)
-    out_1,out_2= window_array(arr_1,arr_2,window_size = size, step_size = 6)
-    for x,y in zip(out_1,out_2):
-        print(x,y)
-    print(out_1.shape)
-    assert     arr_1[7:15,:,:].all() ==  out_1[1,:,:,:].all()
-                    
+    from TEPS_worker import load_dataset
+    x,y ,x_t,y_t = load_dataset()
+    x_out,y_out = window_array_random(x,y, 128,500000)    
         

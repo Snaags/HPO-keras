@@ -17,7 +17,7 @@ via random search using [KerasTuner](https://github.com/keras-team/keras-tuner).
 """
 
 def load_dataset():
-    path = "/home/snaags/scripts/HPO-keras/datasets/Ford/processed/"
+    path = "/home/snaags/scripts/HPO-keras/datasets/Ford/processedb/"
     x_train = np.load(path+"x_train.npy")
     y_train =    np.load(path+"y_train.npy")
     x_test =np.load(path+"x_test.npy")
@@ -30,7 +30,7 @@ def load_dataset():
 
 def main(hyperparameter,budget= 150):
     
-    batch_size = 32 
+    batch_size = 64 
     print(hyperparameter)
     x_train,y_train,x_test,y_test = load_dataset()
     x_train,y_train = window_array(x_train, y_train, hyperparameter["window_size"])
@@ -49,7 +49,7 @@ def main(hyperparameter,budget= 150):
     """
     print("budget: ",budget)
     num_classes = 2
-    epochs = int(100)
+    epochs = int(50)
     model = make_model(input_shape=(x_train.shape[1:]),output_size = num_classes,hyperparameters=hyperparameter)
     
     keras.utils.plot_model(model, show_shapes=True)
@@ -124,6 +124,7 @@ if __name__ == "__main__":
      "conv_3_BatchNormalization": 1, "conv_3_filters": 2, "conv_3_kernel_size": 4, "conv_3_padding": "same", "conv_3_type": "Conv1D",
      "conv_4_BatchNormalization": 1, "conv_4_filters": 2, "conv_4_kernel_size": 8, "conv_4_padding": "same", "conv_4_type": "Conv1D",
      "conv_5_BatchNormalization": 1, "conv_5_filters": 2, "conv_5_kernel_size": 16, "conv_5_padding": "same", "conv_5_type": "Conv1D"} 
+
 
 
     main(hyperparameter)

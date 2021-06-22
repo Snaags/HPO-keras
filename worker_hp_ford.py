@@ -1,5 +1,5 @@
 from ford_worker import main as train_function
-from config_keras_func import init_config 
+from OOP_config import init_config 
 from hpbandster.core.worker import Worker
 class MyWorker(Worker):
 
@@ -8,7 +8,7 @@ class MyWorker(Worker):
 
         self.sleep_interval = sleep_interval
 
-    def compute(self, config, budget, **kwargs):
+    def compute(self, config, budget = 100, **kwargs):
         """
         Simple example for a compute function
         The loss is just a the config + some noise (that decreases with the budget)

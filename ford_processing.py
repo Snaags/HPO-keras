@@ -58,8 +58,8 @@ def readucr(filename):
 
 root_url = "/home/snaags/scripts/HPO-keras/datasets/Ford/"
 
-x_train, y_train = readucr(root_url + "FordA_TRAIN.arff")
-x_test, y_test = readucr(root_url + "FordA_TEST.arff")
+x_train, y_train = readucr(root_url + "FordB_TRAIN.arff")
+x_test, y_test = readucr(root_url + "FordB_TEST.arff")
 
 
 
@@ -120,9 +120,9 @@ The expected labels will then be 0 and 1.
 y_train[y_train == -1] = 0
 y_test[y_test == -1] = 0
 
-np.save("/home/snaags/scripts/HPO-keras/datasets/Ford/processed/x_train.npy",x_train)
-np.save("/home/snaags/scripts/HPO-keras/datasets/Ford/processed/y_train.npy",y_train)
-np.save("/home/snaags/scripts/HPO-keras/datasets/Ford/processed/x_test.npy",x_test)
-np.save("/home/snaags/scripts/HPO-keras/datasets/Ford/processed/y_test.npy",y_test)
+np.save("/home/snaags/scripts/HPO-keras/datasets/Ford/processedb/x_train.npy",x_train)
+np.save("/home/snaags/scripts/HPO-keras/datasets/Ford/processedb/y_train.npy",y_train)
+np.save("/home/snaags/scripts/HPO-keras/datasets/Ford/processedb/x_test.npy",x_test)
+np.save("/home/snaags/scripts/HPO-keras/datasets/Ford/processedb/y_test.npy",y_test)
 exit()
 

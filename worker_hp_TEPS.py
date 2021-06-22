@@ -1,5 +1,5 @@
 from TEPS_worker import main as train_function
-from config_keras_func import init_config 
+from OOP_config import init_config 
 from hpbandster.core.worker import Worker
 class MyWorker(Worker):
 
