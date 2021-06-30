@@ -40,6 +40,7 @@ def init_config():
     optimiser  = CSH.Constant(name = "optimiser", value = "Adam"		) 
     lr =CSH.UniformFloatHyperparameter(name = "optimiser_lr",			lower = 1e-8,upper = 5e-1 ,log = True )
     window_size = CSH.UniformIntegerHyperparameter(name = "window_size", lower = 1 ,upper = 100)
+    window_size = CSH.Constant(name = "window_size", value = 1		) 
     ###Topology Definition]###
 
     hp_list = [

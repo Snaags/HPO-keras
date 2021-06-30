@@ -3,7 +3,7 @@ import numpy as np
 import seaborn as sns
 import pandas as pd
 from sklearn.preprocessing import StandardScaler 
-from ford_worker import load_dataset
+from TEPS_worker import load_dataset
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import pyplot as plt 
 from sklearn.utils import shuffle
@@ -117,8 +117,8 @@ def plot_ridge_by_feature(df1,df2):
     # Draw the densities in a few steps
     g.map(sns.kdeplot,"value",
           bw_adjust=.5, clip_on=False,
-          fill=True, alpha=1, linewidth=1.5)
-    g.map(sns.kdeplot, "value", clip_on=False, color="w", lw=2, bw_adjust=.5)
+          fill=True, alpha=0.7, linewidth=1.5)
+    #g.map(sns.kdeplot, "value", clip_on=False, color="w",alpha = 0.5, lw=1.5, bw_adjust=.5)
     g.map(plt.axhline, y=0, lw=2, clip_on=False)
     
     
@@ -154,10 +154,10 @@ def plot_kde():
     plt.show()
 
 x_train,y_train, x_test, y_test = load_dataset()
-#x_train,y_train = shuffle(x_train,y_train, n_samples = 100000)
+x_train,y_train = shuffle(x_train,y_train, n_samples = 10000)
 x_train = np.squeeze(x_train)
 y_train = np.squeeze(y_train)
-df1 = pd.DataFrame(x_train[:,:50])
+df1 = pd.DataFrame(x_train[:,:5])
 df2 = pd.DataFrame(y_train)
 df = df1.join(df2, lsuffix='_caller', rsuffix='_other')
 plot_ridge_by_feature(df1,df2)

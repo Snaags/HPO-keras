@@ -13,7 +13,9 @@ a layer is defined
 """
 
 class Parameter:
-   
+    """
+    Base parameter class. This is effictively a wrapper around the ConfigSpace hyperparameters
+    """ 
     def __init__(self, name : str , hyperparameter_type : str, lower_or_constant_value , upper_value = None ,normal = False, log : bool = False):
         self.name = name
         self.type = hyperparameter_type
@@ -85,8 +87,16 @@ class Integer_Struct(Parameter):
         self.add_children_to_config_space()
 
 class Cumulative_Integer_Struct(Integer_Struct):
-    def __init__(self,config_space ,  children : list,struct_name, name : str , hyperparameter_type : str, lower_or_constant_value , upper_value = None ,normal = False, log :bool = False ):
-        super().__init__(config_space ,children, struct_name ,name, hyperparameter_type, lower_or_constant_value, upper_value, normal, log)
+    """
+    Generates a value for each child parameter for 1 to n (i.e. 1,2,..,n ) where the parent parameter 
+    value is n.
+    """
+    def __init__(self,config_space ,  children : list,struct_name, name : str ,
+                hyperparameter_type : str, lower_or_constant_value , 
+                upper_value = None ,normal = False, log :bool = False ):
+
+        super().__init__(config_space ,children, struct_name ,name, 
+                hyperparameter_type, lower_or_constant_value, upper_value, normal, log)
 
 
 

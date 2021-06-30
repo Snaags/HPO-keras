@@ -68,6 +68,7 @@ def main(hyperparameter,budget = 10):
 
     train_samples = int(900000)
     test_samples = 10000
+    
 
 
     x_train,y_train,x_test,y_test = load_dataset()
